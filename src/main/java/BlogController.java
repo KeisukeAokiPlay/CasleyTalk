@@ -1,9 +1,9 @@
 package main.java;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,20 +34,28 @@ public class BlogController {
 	  * @param topic トピック
 	  */
 	 public void postTopic(Topic topic){
-		 String sql = "INSERT INTO TOPIC (TITLE, CONTENT)" + "VALUE(" + " '" + topic.getTitle() + "'" + ",'" + topic.getContent() + "'" + ")";
+		 String sql = "INSERT INTO TOPIC (TITLE, CONTENT) VALUES (?, ?)";
 
 		 Connection con = null;
-		 Statement smt = null;
+		 PreparedStatement ps = null;
+
 		 try{
+
 			 con = ConnectionManager.getConnection();
-			 smt = con.createStatement();
-			 smt.executeUpdate(sql);
+			 ps = con.prepareStatement(sql);
+
+			 ps.setString(1, topic.getTitle());
+			 ps.setString(2, topic.getContent());
+
+			 ps.executeUpdate();
+
 		 }catch(SQLException e){
 			 e.printStackTrace();
 		 }finally{
-			 if(smt != null){
+
+			 if(ps != null){
 				 try{
-					 smt.close();
+					 ps.close();
 				 }catch(Exception ignore){
 				 }
 			 }
@@ -69,12 +77,15 @@ public class BlogController {
 		 List<Topic> topics = new ArrayList<Topic>();
 
 		 Connection con = null;
-		 Statement smt = null;
+		 PreparedStatement ps = null;
 		 ResultSet rs = null;
+
 		 try{
+
 			 con = ConnectionManager.getConnection();
-			 smt = con.createStatement();
-			 rs = smt.executeQuery(sql);
+			 ps = con.prepareStatement(sql);
+			 rs = ps.executeQuery(sql);
+
 			 while(rs.next()){
 				 Topic topic = new Topic();
 				 topic.setId(rs.getInt("ID"));
@@ -92,9 +103,9 @@ public class BlogController {
 				}catch(Exception ignore){
 				}
 			}
-			if(smt != null){
+			if(ps != null){
 				try{
-					smt.close();
+					ps.close();
 				}catch(Exception ignore){
 				}
 			}
